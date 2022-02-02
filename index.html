@@ -1,0 +1,269 @@
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <script src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" crossorigin="anonymous"></script>
+        <link rel="stylesheet" href="./style.css">
+        <title >Welcome to my OIL Prediction Gaming Application</title>
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+
+    </head>
+
+    <body > 
+      <!-- <header> -->
+        <!-- <div id="sticky"> -->
+          <nav class="navbar flex-between">
+            <h1 class="logo">Company Name</h1>
+            <ul class="flex nav_links">
+              <li><a href="#buyx" class="font">Buy Tokens</a></li>
+              <li><a href="#sellx" class="font">Sell Tokens</a></li> 
+              <li><a href="#regx" class="font register">Register</a></li>
+            </ul>
+          </nav>
+        <!-- </div> -->
+      <!-- </header>         -->
+        
+      <h2 class="hero_text">Welcome to my Crude Oil Gaming application <br> on Kovan Test Network</h2>  
+        <p class="hero_p">Herein , you buy OIL using BTIG Token and trade to make maximum profits.</p>
+        
+      <button id="button" class="connect" onclick="startNow();">Connect to Metamask</button>
+      <div class="hero_img">      <img  src="./hero_img.svg" alt="hero image">
+      </div>
+
+      <div class="grids">
+        <div class="grid">
+          <div id="regx">
+            <p>Click the button to register for AIRDROP & claim free BTIG token.</p>
+          <br>
+          <button id="button" onclick="register();">Register</button>
+          <button id="button" onclick="claim();">Claim Free Tokens</button>
+          </div>
+          <b><div id="regclaim" ></div></b>
+        </div>
+
+
+        <div class="grid">
+          <div id="buyx" class="form-row">
+            <p>BUY Tokens </p>
+            <div >
+              <button id="button" onclick="CheckRate()">Check Latest Rate</button>
+              <button id="button" onclick="viewRate()">View Last checked Rate</button>
+              <br><br>
+              <b><div id="check" ></div></b>  
+              <input  type="text" id="_quantity_param1" placeholder="Number of Ether">
+              <button id="button" class="trade" onclick="buyToken()">BUY Tokens</button>
+            </div>
+          </div>  
+        </div>
+
+        <div class="grid">
+          <p>SELL Tokens</p>
+          <div id="sellx">
+            <input  type="text" id="_quantity_param2" placeholder="Number of Tokens">
+            <button id="button" class="trade" onclick="sellToken()">SELL Tokens</button>
+          </div>
+      
+          <b><div id="buysell" ></div></b>
+        </div>
+
+        <div class="grid">
+          <div class="form-row">
+            <p>Click the button below to check your Token & ETH balance.</p>
+    
+          <div >
+            <button id="button" onclick="seeBalance()">Check Your Balance</button>
+          </div>
+        
+          <b><div id="bal" ></div></b>
+          </div>
+        </div>
+      </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.4.0-rc.0/web3.min.js"></script>
+    <script type="text/javascript" src="abi.js"></script>
+    <script>
+        var CONTRACT_ADDRESS = "0x137B4E14A2683B311d3477a35F9DE914ab1D1226";
+
+
+window.userAddress = "";
+window.balance = 0;
+
+async function startNow() {
+  if (window.ethereum) {
+    try {
+      await window.ethereum
+        .request({ method: "eth_requestAccounts" })
+        .then(function (address) {
+          const web3 = new Web3(Web3.givenProvider || "http://localhost:8545");
+          window.currentBlock = web3.eth.getBlockNumber();
+          window.contract = new web3.eth.Contract(abi, CONTRACT_ADDRESS);
+          alert(" Metamask connected sucessfully.");
+          window.userAddress = address[0];
+          new web3.eth.getBalance(window.userAddress)
+            .then((balance) => {
+              window.balance = balance / 1e18;
+              //$("#wallet_amount").val((balance/1e18).toFixed(6));
+              $("#walletAddress1").html(window.userAddress);
+              // console.log(window.balance);
+            })
+            .catch((e) => e);
+
+          window.ethereum.on("accountsChanged", function (accounts) {
+            window.userAddress = address[0];
+            new web3.eth.getBalance(window.userAddress)
+              .then((balance) => {
+                window.balance = balance / 1e18;
+                //$("#wallet_amount").val((balance/1e18).toFixed(6));
+              })
+              .catch((e) => e);
+          });
+        });
+    } catch (error) {
+      if (error.code === 4001) {
+      }
+
+      console.log(error);
+    }
+  }
+}
+
+if (window.userAddress) {
+  startNow();
+}
+
+async function register() {
+  if (window.contract) {
+    // alert(cid);
+    window.contract.methods
+      .register()
+      .send({ from: window.userAddress })
+      .then((d) => {
+        $("#regclaim").html("User registered successfully at time "+d.events.Register.returnValues.Time+" by address: "+d.events.Register.returnValues.User);
+        alert("User registered successfully.");
+        console.log(d);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+}
+
+async function claim() {
+  if (window.contract) {
+    // alert(cid);
+    window.contract.methods
+      .claimAirdrop()
+      .send({ from: window.userAddress })
+      .then((d) => {
+        alert("FREE Tokens claimed sucessfully.");
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+}
+async function CheckRate() {
+  if (window.contract) {
+    // alert(cid);
+    window.contract.methods
+      .checkRate()
+      .send({ from: window.userAddress })
+      .then((d) => {
+        viewRate();
+        
+        console.log(d);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+}
+
+async function viewRate() {
+  if (window.contract) {
+    // alert(cid);
+    window.contract.methods
+      .viewRate()
+      .call()
+      .then((d) => {
+        $("#check").html("Current Rate is  "+JSON.stringify(d));
+        
+        console.log(d);
+      })
+      .catch((e) => {
+        console.log(e);
+      });
+  }
+}
+
+async function buyToken() {
+    
+ //   var buytoken=($("#token_amount").val())+'000000000000000000';
+   var p2 = document.getElementById('_quantity_param1').value;
+   var total=parseFloat(p2);
+   // var ref=$("#ref_id").val();
+    total=Math.round(total*1e18);
+  
+    window.contract.methods
+        .buyTokens()
+        .send({ from: window.userAddress,
+                value:total})
+        .then((d) => {
+          //console.log(d);
+          //window.location.reload();
+          alert(" Tokens bought sucessfully.");
+        })
+        .catch((e) => {
+         // console.log(e);
+        });
+}
+
+async function sellToken() {
+
+//   var buytoken=($("#token_amount").val())+'000000000000000000';
+    var p2 = document.getElementById('_quantity_param2').value;
+    var total=parseFloat(p2);
+    // var ref=$("#ref_id").val();
+    //total=Math.round(total*1e18);
+    
+    window.contract.methods
+        .sellTokens(total)
+        .send({ from: window.userAddress
+        })
+        .then((d) => {
+            //console.log(d);
+            //window.location.reload();
+            alert(" Tokens sold sucessfully.");
+        })
+        .catch((e) => {
+        // console.log(e);
+        });
+}
+
+async function seeBalance() {
+    window.contract.methods
+        .seeBalances()
+        .call()
+        .then((result) => {
+          var data="";
+          data+="{Token:"+result[0]+"}::::{ETH: "+result[1]/1e18+"}";
+          
+          $("#bal").html("List of balances =>"+JSON.stringify(data));
+            console.log(result);
+            //window.location.reload();
+            
+        })
+        .catch((e) => {
+         console.log(e);
+        });
+}
+
+    </script>
+  </body>
+
+    
+</html>
